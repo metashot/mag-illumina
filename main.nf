@@ -40,7 +40,7 @@ if (params.interleaved) {
 process raw_reads_stats {   
     tag "${id}"
 
-    publishDir "${params.outdir}/samples/${id}/raw_reads_stats" , mode: 'copy'
+    publishDir "${params.outdir}/${id}/raw_reads_stats" , mode: 'copy'
 
     input:
     tuple val(id), path(reads) from raw_reads_stats_ch
@@ -71,7 +71,7 @@ if (!params.skip_adapter) {
     process adapter {
         tag "${id}"
     
-        publishDir "${params.outdir}/samples/${id}/bbduk" , mode: 'copy',
+        publishDir "${params.outdir}/${id}/bbduk" , mode: 'copy',
             pattern: "stats_adapter.txt"
 
         input:
@@ -113,7 +113,7 @@ if (!params.skip_contaminant) {
     process contaminant {
         tag "${id}"
     
-        publishDir "${params.outdir}/samples/${id}/bbduk" , mode: 'copy', 
+        publishDir "${params.outdir}/${id}/bbduk" , mode: 'copy', 
             pattern: "stats_contaminant.txt"
 
         input:
@@ -188,11 +188,10 @@ if (!params.skip_quality) {
 /*
  * Step 3. Clean reads histograms
  */
-
 process clean_reads_stats {
     tag "${id}"
 
-    publishDir "${params.outdir}/samples/${id}/clean_reads_stats" , mode: 'copy'
+    publishDir "${params.outdir}/${id}/clean_reads_stats" , mode: 'copy'
 
     when:
     ! (params.skip_adapter && params.skip_contaminant && params.skip_quality)
@@ -226,7 +225,7 @@ if (!params.single_end && !params.megahit_only) {
     process spades {
         tag "${id}"
     
-        publishDir "${params.outdir}/samples/${id}" , mode: 'copy' ,
+        publishDir "${params.outdir}/${id}" , mode: 'copy' ,
             saveAs: {filename ->
                 if (filename == "spades/scaffolds.fasta") "assembly/scaffolds.fasta"
                 else "$filename"
@@ -264,7 +263,7 @@ if (params.single_end || params.megahit_only) {
     process megahit {
         tag "${id}"
 
-        publishDir "${params.outdir}/samples/${id}" , mode: 'copy' ,
+        publishDir "${params.outdir}/${id}" , mode: 'copy' ,
             saveAs: {filename -> if (filename == "megahit/final.contigs.fa") "assembly/scaffolds.fasta"}
 
         input:
@@ -302,7 +301,7 @@ scaffolds_spades_ch
 process assembly_stats {
     tag "${id}"
 
-    publishDir "${params.outdir}/samples/${id}/assembly" , mode: 'copy'
+    publishDir "${params.outdir}/${id}/assembly" , mode: 'copy'
 
     input:
     tuple val(id), path(scaffolds) from scaffolds_stats_ch
@@ -377,7 +376,7 @@ scaffolds_metabat2_ch.join(map_metabat2_ch).set{ merged_metabat2_ch }
 process metabat2 {
     tag "${id}"
 
-    publishDir "${params.outdir}/samples/${id}" , mode: 'copy' ,
+    publishDir "${params.outdir}/${id}" , mode: 'copy' ,
         saveAs: {filename ->
             if (filename == "metabat2_depth.txt") "assembly/depth.txt"
             else if (filename == "metabat2.log") "metabat2/log.txt"
