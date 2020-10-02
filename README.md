@@ -1,1 +1,1 @@
-# nf-mag-illumina
+# mag-illumina
