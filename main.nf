@@ -377,8 +377,8 @@ process metabat2 {
     tag "${id}"
 
     publishDir "${params.outdir}" , mode: 'copy' ,
-        pattern: "bins/*.bin*"
-       
+        pattern: "{bins, unbinned}/*.fa"
+
     publishDir "${params.outdir}/data/${id}" , mode: 'copy' ,
         saveAs: {filename ->
             if (filename == "metabat2_depth.txt") "assembly/depth.txt"
@@ -389,20 +389,30 @@ process metabat2 {
     tuple val(id), path(scaffolds), path(bam) from merged_metabat2_ch
     
     output:
-    path "bins/*.bin*" optional true
+    path "bins/*.fa"  optional true
+    path "unbinned/*.fa"  optional true
     path "metabat2_depth.txt"
     path "metabat2.log"
     
     script:
     """
-    mkdir -p bins
     jgi_summarize_bam_contig_depths --outputDepth metabat2_depth.txt $bam
+
+    mkdir -p bins
     metabat2 \
         -i $scaffolds \
         -a metabat2_depth.txt \
         -o bins/${id}.bin \
         -v \
         -t ${task.cpus} \
-        -m 2500 &> metabat2.log
+        --seed 1 \
+        --unbinned \
+        -m ${params.min_contig_size} &> metabat2.log
+
+    mkdir -p unbinned
+    if [ -f bins/${id}.bin.unbinned.fa ]; then
+        mv bins/${id}.bin.unbinned.fa unbinned/${id}.unbinned.fa
+    fi
     """
 }
+
