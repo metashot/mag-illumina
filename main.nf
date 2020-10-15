@@ -3,7 +3,7 @@
 Channel
     .fromFilePairs( params.reads, size: (params.single_end || params.interleaved) ? 1 : 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}." }
-    .set { raw_reads_deinterleave_ch } // .into for two or more target channels
+    .set { raw_reads_deinterleave_ch }
 
 /*
  * Step 0. Deinterleave paired reads
@@ -40,7 +40,7 @@ if (params.interleaved) {
 process raw_reads_stats {   
     tag "${id}"
 
-    publishDir "${params.outdir}/data/${id}/raw_reads_stats" , mode: 'copy'
+    publishDir "${params.outdir}/raw_reads_stats/${id}" , mode: 'copy'
 
     input:
     tuple val(id), path(reads) from raw_reads_stats_ch
@@ -71,7 +71,7 @@ if (!params.skip_adapter) {
     process adapter {
         tag "${id}"
     
-        publishDir "${params.outdir}/data/${id}/bbduk" , mode: 'copy',
+        publishDir "${params.outdir}/qc/${id}" , mode: 'copy',
             pattern: "stats_adapter.txt"
 
         input:
@@ -113,7 +113,7 @@ if (!params.skip_contaminant) {
     process contaminant {
         tag "${id}"
     
-        publishDir "${params.outdir}/data/${id}/bbduk" , mode: 'copy', 
+        publishDir "${params.outdir}/qc/${id}" , mode: 'copy', 
             pattern: "stats_contaminant.txt"
 
         input:
@@ -191,7 +191,7 @@ if (!params.skip_quality) {
 process clean_reads_stats {
     tag "${id}"
 
-    publishDir "${params.outdir}/data/${id}/clean_reads_stats" , mode: 'copy'
+    publishDir "${params.outdir}/clean_reads_stats/${id}" , mode: 'copy'
 
     when:
     ! (params.skip_adapter && params.skip_contaminant && params.skip_quality)
@@ -226,9 +226,9 @@ if (!params.single_end && !params.megahit_only) {
         tag "${id}"
     
         publishDir "${params.outdir}" , mode: 'copy' ,
-            saveAs: {filename ->
+            saveAs: { filename ->
                 if (filename == "spades/scaffolds.fasta") "scaffolds/${id}.scaffolds.fa"
-                else "data/${id}/$filename"
+                else if (filename == "spades/spades.log") "spades/${id}/spades.log"
             }
     
         input:
@@ -264,7 +264,9 @@ if (params.single_end || params.megahit_only) {
         tag "${id}"
 
         publishDir "${params.outdir}" , mode: 'copy' ,
-            saveAs: {filename -> if (filename == "megahit/final.contigs.fa") "scaffolds/${id}.scaffolds.fa"}
+            saveAs: { filename -> 
+                if (filename == "megahit/final.contigs.fa") "scaffolds/${id}.scaffolds.fa"
+            }
 
         input:
         tuple val(id), path(reads) from clean_reads_megahit_ch
@@ -301,7 +303,7 @@ scaffolds_spades_ch
 process assembly_stats {
     tag "${id}"
 
-    publishDir "${params.outdir}/data/${id}/assembly" , mode: 'copy'
+    publishDir "${params.outdir}/assembly_stats/${id}" , mode: 'copy'
 
     input:
     tuple val(id), path(scaffolds) from scaffolds_stats_ch
@@ -335,6 +337,7 @@ process map {
     input = params.single_end ? "-U \"$reads\"" :  "-1 \"${reads[0]}\" -2 \"${reads[1]}\""
     """
     mkdir -p bowtie_db
+
     bowtie2-build \
         --threads ${task.cpus} \
         $scaffolds \
@@ -361,10 +364,10 @@ process sam2bam {
     tuple val(id), path("map.bam") into map_metabat2_ch
     
     script:
-    per_thread_memory_GB = Math.floor(task.memory.toGiga() / task.cpus) as int
-    per_thread_memory_GB = per_thread_memory_GB > 1 ? per_thread_memory_GB : 1
+    thread_mem_GB = Math.floor(task.memory.toGiga() / task.cpus) as int
+    thread_mem_GB_1 = thread_mem_GB > 1 ? thread_mem_GB : 1
     """
-    samtools sort -@ ${task.cpus} -m ${per_thread_memory_GB}G -o map.bam $sam
+    samtools sort -@ ${task.cpus} -m ${thread_mem_GB_1}G -o map.bam $sam
     """
 }
 
@@ -379,10 +382,10 @@ process metabat2 {
     publishDir "${params.outdir}" , mode: 'copy' ,
         pattern: "{bins, unbinned}/*.fa"
 
-    publishDir "${params.outdir}/data/${id}" , mode: 'copy' ,
+    publishDir "${params.outdir}" , mode: 'copy' ,
         saveAs: {filename ->
-            if (filename == "metabat2_depth.txt") "assembly/depth.txt"
-            else if (filename == "metabat2.log") "metabat2/log.txt"
+            if (filename == "metabat2_depth.txt") "metabat2/${id}/depth.txt"
+            else if (filename == "metabat2.log") "metabat2/${id}/log.txt"
         }
 
     input:
@@ -415,4 +418,3 @@ process metabat2 {
     fi
     """
 }
-
