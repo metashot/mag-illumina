@@ -3,7 +3,7 @@
 metashot/mag-illumina is a [Nextflow](https://www.nextflow.io/) pipeline for
 the assembly and binning of Illumina sequences from metagenomic samples.
 
-Main features:
+## Main features
 
 - Input: single-end, paired-end (also interleaved) Illumina sequences (gzip
   and bzip2 compressed FASTQ also supported);
@@ -27,7 +27,7 @@ Main features:
    
   ```bash
   nextflow run metashot/mag-illumina
-    --input '*_R{1,2}.fastq.gz' \
+    --reads '*_R{1,2}.fastq.gz' \
     --outdir results
   ```
 
