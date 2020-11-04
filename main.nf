@@ -60,7 +60,8 @@ process raw_reads_stats {
         gchist=gchist.txt \
         aqhist=aqhist.txt \
         lhist=lhist.txt \
-        gcbins=auto
+        gcbins=auto \
+        threads=${task.cpus}
     """
 }
  
@@ -214,7 +215,8 @@ process clean_reads_stats {
         gchist=gchist.txt \
         aqhist=aqhist.txt \
         lhist=lhist.txt \
-        gcbins=auto
+        gcbins=auto \
+        threads=${task.cpus}
     """
 }
 
