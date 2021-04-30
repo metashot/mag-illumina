@@ -33,7 +33,7 @@ workflow {
         clean_ch = reads_ch
     }
 
-    if (params.run_metaplasmidspades) {
+    if (params.run_metaplasmidspades && !params.single_end) {
         metaplasmidspades(clean_ch)
 
         if (params.viralverify_db == 'none') {
@@ -61,6 +61,6 @@ workflow {
 
         map(clean_ch.join(scaffolds_ch))
         sam2bam(map.out.sam)
-        metabat2(sam2bam.out.bam)
+        metabat2(scaffolds_ch.join(sam2bam.out.bam))
     }   
 }

@@ -36,7 +36,7 @@ process metaspades {
 process metaplasmidspades {
     tag "${id}"
 
-    publishDir "${params.outdir}/meetaplasmidspades" , mode: 'copy' ,
+    publishDir "${params.outdir}/metaplasmidspades" , mode: 'copy' ,
         pattern: "${id}/*"
 
     publishDir "${params.outdir}/scaffolds_plasmids" , mode: 'copy' ,
@@ -51,12 +51,13 @@ process metaplasmidspades {
 
     script:
     task_memory_GB = task.memory.toGiga()
-    param_metaspades_k = params.spades_k == 'default' ? "" :  "-k ${params.metaspades_k}"
-    input = params.single_end ? "-s \"$reads\"" : "-1 \"${reads[0]}\" -2 \"${reads[1]}\""
+    param_metaspades_k = params.metaspades_k == 'default' ? "" : "-k ${params.metaspades_k}"
     """
     spades.py \
-        $input \
+        -1 ${reads[0]} \
+        -2 ${reads[1]} \
         --plasmid \
+        --meta \
         ${param_metaspades_k} \
         --threads ${task.cpus} \
         --memory ${task_memory_GB} \
