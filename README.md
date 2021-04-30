@@ -21,6 +21,8 @@ sequences from metagenomic samples.
   [bbtools](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/statistics-guide/);
 - Binning with
   [Metabat2](https://bitbucket.org/berkeleylab/metabat/src/master/).
+- Optionally, assemble plasmids with metaplasmidSPAdes and verify them using
+  ViralVerify.
 
 ## Quick start
 
