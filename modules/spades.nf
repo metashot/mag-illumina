@@ -93,6 +93,9 @@ process viralverify {
             if (filename == "${id}/Prediction_results_fasta/${id}_plasmid.fasta") "verified_plasmids/${id}.fa"
         }
 
+    when:
+    scaffolds.size() > 0
+
     input:
     tuple val(id), path(scaffolds)
     path(viralverify_db)

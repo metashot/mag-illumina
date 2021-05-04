@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl=2
 
-include { deinterleave; trim_adapters; remove_contaminants; quality_filter; raw_reads_stats; clean_reads_stats; statswrapper } from './modules/bbtools'
+include { deinterleave; clean; raw_reads_stats; clean_reads_stats; statswrapper } from './modules/bbtools'
 include { metaspades; metaplasmidspades; viralverify; viralverify_db_download} from './modules/spades'
 include { megahit } from './modules/megahit'
 include { map; sam2bam; metabat2 } from './modules/metabat'
@@ -24,10 +24,8 @@ workflow {
     raw_reads_stats(deint_ch)
 
     if (!params.skip_cleaning) {
-        trim_adapters(deint_ch)
-        remove_contaminants(trim_adapters.out.reads)
-        quality_filter(remove_contaminants.out.reads)
-        clean_ch = quality_filter.out.reads
+        clean(deint_ch)
+        clean_ch = clean.out.reads
         clean_reads_stats(clean_ch)
     } else {
         clean_ch = reads_ch
@@ -48,7 +46,7 @@ workflow {
     }
 
     if (!params.skip_assembly){
-        if ((params.assembler == "metaspades") && !params.single_end) {
+        if ((params.assembler == "metaspades") & (!params.single_end)) {
             metaspades(clean_ch)
             scaffolds_ch = metaspades.out.scaffolds
         }

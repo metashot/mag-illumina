@@ -22,28 +22,41 @@ process deinterleave {
     """
 }
 
-process trim_adapters {
+process clean {
     tag "${id}"
 
     publishDir "${params.outdir}/qc/${id}" , mode: 'copy',
         pattern: "stats_adapter.txt"
 
+    publishDir "${params.outdir}/qc/${id}" , mode: 'copy', 
+        pattern: "stats_contaminant.txt"
+
+    publishDir "${params.outdir}/clean_reads" , mode: 'copy' , 
+        enabled: params.save_clean ,
+        pattern: "${id}*.clean.fastq.gz"
+
     input:
     tuple val(id), path(reads)
 
     output:
-    tuple val(id), path("adapt*.fastq.gz"), emit: reads
     path "stats_adapter.txt"
+    path "stats_contaminant.txt"
+    tuple val(id), path("${id}*.clean.fastq.gz"), emit: reads
 
     script:
     task_memory_GB = task.memory.toGiga()
     input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
-    output = params.single_end ? "out=adapt.fastq.gz" : "out1=adapt_1.fastq.gz out2=adapt_2.fastq.gz"
+    output_adapt = params.single_end ? "out=adapt.fastq.gz" : "out1=adapt_1.fastq.gz out2=adapt_2.fastq.gz"
+    input_adapt = params.single_end ? "in=adapt.fastq.gz" : "in1=adapt_1.fastq.gz in2=adapt_2.fastq.gz"
+    output_contam = params.single_end ? "out=contam.fastq.gz" : "out1=contam_1.fastq.gz out2=contam_2.fastq.gz"
+    input_contam = params.single_end ? "in=contam.fastq.gz" : "in1=contam_1.fastq.gz in2=contam_2.fastq.gz"
+    output = params.single_end ? "out=${id}.clean.fastq.gz" : "out1=${id}_1.clean.fastq.gz out2=${id}_2.clean.fastq.gz"
+
     """
     bbduk.sh \
         -Xmx${task_memory_GB}g \
         $input \
-        $output \
+        $output_adapt \
         ref=adapters \
         ktrim=r \
         k=23 \
@@ -54,59 +67,22 @@ process trim_adapters {
         interleaved=f \
         stats=stats_adapter.txt \
         threads=${task.cpus}
-    """
-}
 
-process remove_contaminants {
-    tag "${id}"
-
-    publishDir "${params.outdir}/qc/${id}" , mode: 'copy', 
-        pattern: "stats_contaminant.txt"
-
-    input:
-    tuple val(id), path(reads)
-
-    output:
-    tuple val(id), path("contam*.fastq.gz"), emit: reads
-    path "stats_contaminant.txt"
-
-    script:
-    task_memory_GB = task.memory.toGiga()
-    input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
-    output = params.single_end ? "out=contam.fastq.gz" : "out1=contam_1.fastq.gz out2=contam_2.fastq.gz"
-    """
     bbduk.sh \
         -Xmx${task_memory_GB}g \
-        $input \
-        $output \
+        $input_adapt \
+        $output_contam \
         ref=artifacts,phix \
         k=31 \
         hdist=1 \
         interleaved=f \
         stats=stats_contaminant.txt \
         threads=${task.cpus}
-    """
-}
 
-process quality_filter {
-    tag "${id}"
+    rm -rf adapt*.fastq.gz
 
-    publishDir "${params.outdir}/clean_reads" , mode: 'copy' , 
-        enabled: params.save_clean
-
-    input:
-    tuple val(id), path(reads)
-
-    output:
-    tuple val(id), path("${id}*.fastq.gz"), emit: reads
-
-    script:
-    task_memory_GB = task.memory.toGiga()
-    input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
-    output = params.single_end ? "out=${id}.fastq.gz" : "out1=${id}_1.fastq.gz out2=${id}_2.fastq.gz"
-    """
     bbduk.sh \
-        $input \
+        $input_contam \
         $output \
         maq=10 \
         maxns=4 \
@@ -116,6 +92,8 @@ process quality_filter {
         minlen=50 \
         interleaved=f \
         threads=${task.cpus}
+
+    rm -rf contam*.fastq.gz
     """
 }
 
