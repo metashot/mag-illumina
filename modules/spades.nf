@@ -56,8 +56,9 @@ process metaplasmidspades {
     spades.py \
         -1 ${reads[0]} \
         -2 ${reads[1]} \
-        --plasmid \
         --meta \
+        --only-assembler \
+        --plasmid \
         ${param_metaspades_k} \
         --threads ${task.cpus} \
         --memory ${task_memory_GB} \
