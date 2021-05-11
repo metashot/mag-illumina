@@ -4,6 +4,7 @@ process megahit {
     tag "${id}"
 
     publishDir "${params.outdir}/megahit" , mode: 'copy' ,
+        enabled: params.save_assember_output ,
         pattern: "${id}/*"
 
     publishDir "${params.outdir}/scaffolds" , mode: 'copy' ,

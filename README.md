@@ -46,9 +46,11 @@ after the pipeline has finished.
 
 ### Main outputs
 
-- `scaffolds`: scaffolds for each input samples;
-- `bins`: metabat2 bins for each assembly;
-- `unbinned`: unbinned contigs for each assembly.
+- `scaffolds`: scaffolds for each input sample;
+- `bins`: genome bins;
+- `unbinned`: unbinned contigs;
+- `stats_scaffolds.tsv`: scaffold statistics;
+- `verified_plasmids`: verified plasmids (if `--run_metaplasmidspades`).
 
 ### Secondary outputs
 
@@ -56,9 +58,12 @@ after the pipeline has finished.
   quality and length for each input sample;
 - `clean_reads_stats`: same as above, but for the reads after the quality
   control;
-- `qc`: statistaics about the adapter trimming and the contaminant filtering;
-- `spades`: Spades log for each input sample;
-- `assembly_stats`: scaffold statistics for each each assembly;
+- `clean_reads`: clean reads (if `--save_clean`);
+- `qc`: adapter trimming and contaminant filtering statistics;
+- `metaspades`, `metaplasmidspades` and `megahit`: complete assembler output for
+  each sample (if `--save_assember_output`);
+- `scaffolds_plasmids`: candidate plasmids (if `--run_metaplasmidspades`);
+- `viralverify`: viralVerify output (if `--run_metaplasmidspades`);
 - `metabat2`: metabat2 log and the depth of coverage for each assembly.
 
 ## System requirements

@@ -4,6 +4,7 @@ process metaspades {
     tag "${id}"
 
     publishDir "${params.outdir}/metaspades" , mode: 'copy' ,
+        enabled: params.save_assember_output ,
         pattern: "${id}/*"
 
     publishDir "${params.outdir}/scaffolds" , mode: 'copy' ,
@@ -19,10 +20,11 @@ process metaspades {
     script:
     task_memory_GB = task.memory.toGiga()
     param_metaspades_k = params.metaspades_k == 'default' ? "" :  "-k ${params.metaspades_k}"
+    param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
     """
     spades.py \
         --meta \
-        --only-assembler \
+        ${param_metaspades_only_assembler} \
         -1 ${reads[0]} \
         -2 ${reads[1]} \
         ${param_metaspades_k} \
@@ -37,8 +39,9 @@ process metaplasmidspades {
     tag "${id}"
 
     publishDir "${params.outdir}/metaplasmidspades" , mode: 'copy' ,
+        enabled: params.save_assember_output ,
         pattern: "${id}/*"
-
+        
     publishDir "${params.outdir}/scaffolds_plasmids" , mode: 'copy' ,
         pattern: "${id}.fa"
 
@@ -52,12 +55,13 @@ process metaplasmidspades {
     script:
     task_memory_GB = task.memory.toGiga()
     param_metaspades_k = params.metaspades_k == 'default' ? "" : "-k ${params.metaspades_k}"
+    param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
     """
     spades.py \
         -1 ${reads[0]} \
         -2 ${reads[1]} \
         --meta \
-        --only-assembler \
+        ${param_metaspades_only_assembler} \
         --plasmid \
         ${param_metaspades_k} \
         --threads ${task.cpus} \
