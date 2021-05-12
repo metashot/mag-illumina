@@ -4,7 +4,7 @@ process metaspades {
     tag "${id}"
 
     publishDir "${params.outdir}/metaspades" , mode: 'copy' ,
-        enabled: params.save_assember_output ,
+        enabled: params.save_assembler_output ,
         pattern: "${id}/*"
 
     publishDir "${params.outdir}/scaffolds" , mode: 'copy' ,
@@ -39,7 +39,7 @@ process metaplasmidspades {
     tag "${id}"
 
     publishDir "${params.outdir}/metaplasmidspades" , mode: 'copy' ,
-        enabled: params.save_assember_output ,
+        enabled: params.save_assembler_output ,
         pattern: "${id}/*"
         
     publishDir "${params.outdir}/scaffolds_plasmids" , mode: 'copy' ,

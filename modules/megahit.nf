@@ -4,7 +4,7 @@ process megahit {
     tag "${id}"
 
     publishDir "${params.outdir}/megahit" , mode: 'copy' ,
-        enabled: params.save_assember_output ,
+        enabled: params.save_assembler_output ,
         pattern: "${id}/*"
 
     publishDir "${params.outdir}/scaffolds" , mode: 'copy' ,
