@@ -37,7 +37,7 @@ process sam2bam {
     tuple val(id), path("map.bam"), emit: bam
     
     script:
-    thread_mem_GB = Math.floor(task.memory.toGiga() / task.cpus) as int
+    thread_mem_GB = Math.floor(task.memory.toGiga() / task.cpus) - 2) as int
     thread_mem_GB_1 = thread_mem_GB > 1 ? thread_mem_GB : 1
     """
     samtools sort -@ ${task.cpus} -m ${thread_mem_GB_1}G -o map.bam $sam
