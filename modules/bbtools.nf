@@ -11,7 +11,7 @@ process deinterleave {
     tuple val(id), path("deint*.fastq.gz"), emit: reads
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     """
     reformat.sh \
         -Xmx${task_memory_GB}g \
@@ -44,7 +44,7 @@ process clean {
     tuple val(id), path("${id}*.clean.fastq.gz"), emit: reads
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
     output_adapt = params.single_end ? "out=adapt.fastq.gz" : "out1=adapt_1.fastq.gz out2=adapt_2.fastq.gz"
     input_adapt = params.single_end ? "in=adapt.fastq.gz" : "in1=adapt_1.fastq.gz in2=adapt_2.fastq.gz"
@@ -109,7 +109,7 @@ process raw_reads_stats {
     path "*hist.txt"
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
     """
     bbduk.sh \
@@ -137,7 +137,7 @@ process clean_reads_stats {
     path "*hist.txt"
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     input = params.single_end ? "in=\"$reads\"" : "in1=\"${reads[0]}\" in2=\"${reads[1]}\""
     """
     bbduk.sh \

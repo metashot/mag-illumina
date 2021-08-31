@@ -18,7 +18,7 @@ process metaspades {
     path "${id}/*"
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     param_metaspades_k = params.metaspades_k == 'default' ? "" :  "-k ${params.metaspades_k}"
     param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
     """
@@ -53,7 +53,7 @@ process metaplasmidspades {
     path "${id}/*"
 
     script:
-    task_memory_GB = Math.floor(0.8 * task.memory.toGiga())
+    task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     param_metaspades_k = params.metaspades_k == 'default' ? "" : "-k ${params.metaspades_k}"
     param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
     """
