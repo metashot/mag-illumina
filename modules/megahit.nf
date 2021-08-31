@@ -19,7 +19,7 @@ process megahit {
 
 
     script:
-    task_memory_GB = task.memory.toGiga()
+    task_memory_GB = 0.8 * task.memory.toGiga()
     param_megahit_k = params.megahit_k == 'default' ? "" : "--k-list ${params.megahit_k}"
     input = params.single_end ? "-r \"$reads\"" :  "-1 \"${reads[0]}\" -2 \"${reads[1]}\""
     """
