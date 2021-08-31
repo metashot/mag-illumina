@@ -82,6 +82,7 @@ process clean {
     rm -rf adapt*.fastq.gz
 
     bbduk.sh \
+        -Xmx${task_memory_GB}g \
         $input_contam \
         $output \
         maq=10 \
