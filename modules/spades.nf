@@ -15,12 +15,13 @@ process metaspades {
 
     output:
     tuple val(id), path("${id}.fa"), emit: scaffolds
-    path "${id}/*"
+    path "${id}/*", optional: true
 
     script:
     task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     param_metaspades_k = params.metaspades_k == 'default' ? "" :  "-k ${params.metaspades_k}"
     param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
+    param_save_assembler_output = params.save_assembler_output ? "Y" : "N"
     """
     spades.py \
         --meta \
@@ -32,6 +33,10 @@ process metaspades {
         --memory ${task_memory_GB} \
         -o ${id}
     cp ${id}/scaffolds.fasta ${id}.fa
+
+    if [ "${param_save_assembler_output}" = "N" ]; then
+        rm -rf ${id}
+    fi
     """
 }
 
@@ -50,12 +55,13 @@ process metaplasmidspades {
 
     output:
     tuple val(id), path("${id}.fa"), emit: scaffolds
-    path "${id}/*"
+    path "${id}/*", optional: true
 
     script:
     task_memory_GB = Math.floor(0.8 * task.memory.toGiga()) as int
     param_metaspades_k = params.metaspades_k == 'default' ? "" : "-k ${params.metaspades_k}"
     param_metaspades_only_assembler = params.metaspades_only_assembler ? "--only-assembler" : ""
+    param_save_assembler_output = params.save_assembler_output ? "Y" : "N"
     """
     spades.py \
         -1 ${reads[0]} \
@@ -68,6 +74,10 @@ process metaplasmidspades {
         --memory ${task_memory_GB} \
         -o ${id}
     cp ${id}/scaffolds.fasta ${id}.fa
+
+    if [ "${param_save_assembler_output}" = "N" ]; then
+        rm -rf ${id}
+    fi
     """
 }
 

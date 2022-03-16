@@ -1,49 +1,5 @@
 nextflow.enable.dsl=2
 
-process map {
-    tag "${id}"
-
-    input:
-    tuple val(id), path(reads), path(scaffolds)
-    
-    output:
-    tuple val(id), path("map.sam"), emit: sam
-    
-    script:
-    input = params.single_end ? "-U \"$reads\"" :  "-1 \"${reads[0]}\" -2 \"${reads[1]}\""
-    """
-    mkdir -p bowtie_db
-
-    bowtie2-build \
-        --threads ${task.cpus} \
-        $scaffolds \
-        bowtie_db/scaffolds
-
-    bowtie2 \
-        -x bowtie_db/scaffolds \
-        $input \
-        --threads ${task.cpus} \
-        -S map.sam
-    """
-}
-
-process sam2bam {
-    tag "${id}"
-
-    input:
-    tuple val(id), path(sam)
-    
-    output:
-    tuple val(id), path("map.bam"), emit: bam
-    
-    script:
-    thread_mem_GB = (Math.floor(task.memory.toGiga() / task.cpus) - 2) as int
-    thread_mem_GB_1 = thread_mem_GB > 1 ? thread_mem_GB : 1
-    """
-    samtools sort -@ ${task.cpus} -m ${thread_mem_GB_1}G -o map.bam $sam
-    """
-}
-
 process metabat2 {
     tag "${id}"
 
@@ -57,7 +13,7 @@ process metabat2 {
         }
 
     input:
-    tuple val(id), path(scaffolds), path(bam)
+    tuple val(id), path(reads), path(scaffolds)
     
     output:
     path "bins/*.fa", optional: true
@@ -66,9 +22,39 @@ process metabat2 {
     path "metabat2.log"
     
     script:
+    input = params.single_end ? "-U \"$reads\"" :  "-1 \"${reads[0]}\" -2 \"${reads[1]}\""
+    thread_mem_GB = (Math.floor(task.memory.toGiga() / task.cpus) - 2) as int
+    thread_mem_GB_1 = thread_mem_GB > 1 ? thread_mem_GB : 1
     """
-    jgi_summarize_bam_contig_depths --outputDepth metabat2_depth.txt $bam
+    mkdir -p bowtie_db
+
+    bowtie2-build \
+        --threads ${task.cpus} \
+        $scaffolds \
+        bowtie_db/scaffolds
+
+    bowtie2 \
+        -x bowtie_db/scaffolds \
+        $input \
+        --threads ${task.cpus} \
+        -S map.sam
+
+    samtools sort \
+        -@ ${task.cpus} \
+        -m ${thread_mem_GB_1}G \
+        -o map.bam \
+        map.sam
+
+    rm -f map.sam
+
+    jgi_summarize_bam_contig_depths \
+        --outputDepth metabat2_depth.txt \
+        map.bam
+
+    rm -f map.bam
+
     mkdir -p bins
+    
     metabat2 \
         -i $scaffolds \
         -a metabat2_depth.txt \
@@ -80,6 +66,7 @@ process metabat2 {
         -m ${params.min_contig_size} &> metabat2.log
 
     mkdir -p unbinned
+
     if [ -f bins/${id}.bin.unbinned.fa ]; then
         mv bins/${id}.bin.unbinned.fa unbinned/${id}.unbinned.fa
     fi
