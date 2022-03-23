@@ -5,7 +5,7 @@ nextflow.enable.dsl=2
 include { deinterleave; clean; raw_reads_stats; clean_reads_stats; statswrapper } from './modules/bbtools'
 include { metaspades; metaplasmidspades; viralverify; viralverify_db_download} from './modules/spades'
 include { megahit } from './modules/megahit'
-include { map; sam2bam; metabat2 } from './modules/metabat'
+include { metabat2 } from './modules/metabat'
 
 
 workflow {
@@ -57,8 +57,6 @@ workflow {
 
         statswrapper(scaffolds_ch.map { row -> row[1] }.collect())
 
-        map(clean_ch.join(scaffolds_ch))
-        sam2bam(map.out.sam)
-        metabat2(scaffolds_ch.join(sam2bam.out.bam))
+        metabat2(clean_ch.join(scaffolds_ch))
     }   
 }
