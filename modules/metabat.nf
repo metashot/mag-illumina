@@ -70,5 +70,13 @@ process metabat2 {
     if [ -f bins/${id}.bin.unbinned.fa ]; then
         mv bins/${id}.bin.unbinned.fa unbinned/${id}.unbinned.fa
     fi
+    
+    if [ -f bins/${id}.bin.lowDepth.fa ]; then
+        mv bins/${id}.bin.lowDepth.fa unbinned/${id}.lowDepth.fa
+    fi
+    
+    if [ -f bins/${id}.bin.tooShort.fa ]; then
+        mv bins/${id}.bin.tooShort.fa unbinned/${id}.tooShort.fa
+    fi
     """
 }
