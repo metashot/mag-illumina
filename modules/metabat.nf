@@ -4,7 +4,7 @@ process metabat2 {
     tag "${id}"
 
     publishDir "${params.outdir}" , mode: 'copy' ,
-        pattern: "{bins, unbinned}/*.fa"
+        pattern: "{bins,unbinned}/*.fa"
 
     publishDir "${params.outdir}" , mode: 'copy' ,
         saveAs: {filename ->
